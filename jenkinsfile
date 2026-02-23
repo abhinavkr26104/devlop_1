@@ -1,44 +1,46 @@
 pipeline {
-    agent any  // Use any available agent
+    agent any
 
     tools {
-        maven 'Maven'  // Ensure this matches the name configured in Jenkins
+        maven 'Maven'
     }
+
     stages {
+
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/abhinavkr26104/devlop_1.git'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/abhinavkr26104/devlop_1.git'
+                    ]]
+                ])
             }
         }
 
         stage('Build') {
             steps {
-                sh 'mvn clean package'  // Run Maven build
+                sh 'mvn clean package'
             }
         }
 
         stage('Test') {
             steps {
-                sh 'mvn test'  // Run unit tests
+                sh 'mvn test'
             }
         }
 
-        
-        
-       
-        stage('Run Application') {
+        stage('Archive Artifacts') {
             steps {
-                // Start the JAR application
-                sh 'java -jar target/mavenlistapp-1.0-SNAPSHOT.jar'
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
-
-        
     }
 
     post {
         success {
-            echo 'Build and deployment successful!'
+            echo 'Build completed successfully!'
         }
         failure {
             echo 'Build failed!'
